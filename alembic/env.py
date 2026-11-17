@@ -1,7 +1,6 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
@@ -9,9 +8,9 @@ from alembic import context
 # access to the values within the .ini file in use.
 config = context.config
 
+import app.models  # noqa: F401  (registers all models)
 from app.core.config import settings
 from app.core.database import Base
-import app.models  # noqa: F401  (registers all models)
 
 # '%' must be escaped for Alembic's config parser (URL-encoded passwords contain it)
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
@@ -72,7 +71,11 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,  # also detect column type changes
+            # SQLite can't ALTER most things; "batch mode" recreates the table instead.
+            render_as_batch=connection.dialect.name == "sqlite",
         )
 
         with context.begin_transaction():

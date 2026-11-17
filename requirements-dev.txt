@@ -1,3 +1,6 @@
+# Dev/test tools. Node equivalent: "devDependencies".
 -r requirements.txt
-pytest
-httpx
+pytest==9.2.0
+pytest-cov==7.1.0
+httpx2==2.16.2                # used by FastAPI's TestClient (like supertest)
+ruff==0.17.5                  # linter + formatter (like eslint + prettier)
